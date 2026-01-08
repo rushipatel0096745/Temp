@@ -84,12 +84,16 @@ require_once __DIR__ . "../../../constants.php";
 require __DIR__ . '../../../database/db_connect.php';
 
 $name = $_GET["name"] ?? "";
-$categories = $_GET["categories"] ?? [];
+$categories = $_GET["categories"] ?? "";
 
-if (!is_array($categories)) {
-    $categories = array_filter(explode(',', $categories));
+// conver category string to array
+if (!empty($categories)) {
+    $categories = explode(",", $categories);
+    // Remove empty strings
+    $categories = array_filter($categories);
+} else {
+    $categories = [];
 }
-
 
 $sql = "
 SELECT 
@@ -101,20 +105,18 @@ SELECT
     P.description,
     GROUP_CONCAT(DISTINCT C.category_name) AS categories
 FROM product P
-JOIN product_category PC ON P.p_id = PC.p_id
-JOIN category C ON C.c_id = PC.c_id
-WHERE 1
+LEFT JOIN product_category PC ON P.p_id = PC.p_id
+LEFT JOIN category C ON C.c_id = PC.c_id
+WHERE 1 = 1
 ";
 
 $params = [];
 
-/* 🔍 Search filter */
 if (!empty($name) && $name !== "undefined") {
     $sql .= " AND P.product_name LIKE ? ";
     $params[] = "%$name%";
 }
 
-/* 📂 Category filter */
 if (!empty($categories)) {
     $placeholders = implode(',', array_fill(0, count($categories), '?'));
     $sql .= " AND PC.c_id IN ($placeholders) ";
