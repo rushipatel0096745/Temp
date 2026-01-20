@@ -351,4 +351,71 @@
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
   </body>
 
+
   </html>
+
+ix-H81M-S:~/Rushikesh$ composer create-project --prefer-dist yiisoft/yii2-app-basic yii_ecomm
+Creating a "yiisoft/yii2-app-basic" project at "./yii_ecomm"
+Installing yiisoft/yii2-app-basic (2.0.54)
+  - Installing yiisoft/yii2-app-basic (2.0.54): Extracting archive
+Created project in /home/corewix/Rushikesh/yii_ecomm
+Loading composer repositories with package information
+Updating dependencies
+Your requirements could not be resolved to an installable set of packages.
+
+  Problem 1
+    - yiisoft/yii2[2.0.45, ..., 2.0.48.1] require bower-asset/jquery 3.6.*@stable | 3.5.*@stable | 3.4.*@stable | 3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable -> could not be found in any version, but the following packages provide it:
+      - yidas/yii2-bower-asset Bower Assets for Yii 2 app provided via Composer repository
+      - craftcms/cms Craft CMS
+      - yidas/yii2-composer-bower-skip A Composer package that allows you to install or update Yii2 without Bower-Asset
+      - demokn/yii2-composer-asset
+      - lsat/yii2-bower-asset Bower Assets for Yii 2 app provided via Composer repository
+      - kriss/yii2-calendar-schedule Yii2 Calendar Schedule
+      - yidas/yii2-jquery jQuery Asset Bundle extension with fixed and CDN sources for Yii2 framework
+      - craftcms/yii2-dynamodb Yii2 implementation of a cache, session, and queue driver for DynamoDB
+      - jamband/yii2-schemadump Generate the schema from an existing database
+      - craftcms/yii2-adapter Craft CMS Yii2 adapter
+      - umono/yaa-yii2 一个基于Vue3 yii2 的后台框架，可快速助你开发。
+      - maiscrm/yii2-composer-bower-skip A Composer package that allows you to install or update Yii2 without Bower-Asset
+      - kriss/yii2-amap Yii2 Amap
+      - blackhive/yii2-app-advanced Yii 2 Advanced Project Template
+      - cliff363825/yii2-bower-asset Yii2 bower asset
+      - getdkan/recline recline.js module for DKAN/Drupal
+      - jamband/yii2-ensure-unique-behavior This extension insert unique identifier automatically for the Yii 2 framework
+      - kriss/yii2-advanced Yii2 advanced project template, Frontend for API and Backend with AdminLTE
+      - kriss/yii2-geo Yii2 GEO
+      - maniakalen/tags Yii2 Element tags integration module
+      ... and 11 more.
+      Consider requiring one of these to satisfy the bower-asset/jquery requirement.
+    - yiisoft/yii2[2.0.49, ..., 2.0.54] require bower-asset/jquery 3.7.*@stable | 3.6.*@stable | 3.5.*@stable | 3.4.*@stable | 3.3.*@stable | 3.2.*@stable | 3.1.*@stable | 2.2.*@stable | 2.1.*@stable | 1.11.*@stable | 1.12.*@stable -> could not be found in any version, but the following packages provide it:
+      - yidas/yii2-bower-asset Bower Assets for Yii 2 app provided via Composer repository
+      - craftcms/cms Craft CMS
+      - yidas/yii2-composer-bower-skip A Composer package that allows you to install or update Yii2 without Bower-Asset
+      - demokn/yii2-composer-asset
+      - lsat/yii2-bower-asset Bower Assets for Yii 2 app provided via Composer repository
+      - kriss/yii2-calendar-schedule Yii2 Calendar Schedule
+      - yidas/yii2-jquery jQuery Asset Bundle extension with fixed and CDN sources for Yii2 framework
+      - craftcms/yii2-dynamodb Yii2 implementation of a cache, session, and queue driver for DynamoDB
+      - jamband/yii2-schemadump Generate the schema from an existing database
+      - craftcms/yii2-adapter Craft CMS Yii2 adapter
+      - umono/yaa-yii2 一个基于Vue3 yii2 的后台框架，可快速助你开发。
+      - maiscrm/yii2-composer-bower-skip A Composer package that allows you to install or update Yii2 without Bower-Asset
+      - kriss/yii2-amap Yii2 Amap
+      - blackhive/yii2-app-advanced Yii 2 Advanced Project Template
+      - cliff363825/yii2-bower-asset Yii2 bower asset
+      - getdkan/recline recline.js module for DKAN/Drupal
+      - jamband/yii2-ensure-unique-behavior This extension insert unique identifier automatically for the Yii 2 framework
+      - kriss/yii2-advanced Yii2 advanced project template, Frontend for API and Backend with AdminLTE
+      - kriss/yii2-geo Yii2 GEO
+      - maniakalen/tags Yii2 Element tags integration module
+      ... and 11 more.
+      Consider requiring one of these to satisfy the bower-asset/jquery requirement.
+    - Root composer.json requires yiisoft/yii2 ~2.0.45 -> satisfiable by yiisoft/yii2[2.0.45, ..., 2.0.54].
+
+Potential causes:
+ - A typo in the package name
+ - The package is not available in a stable-enough version according to your minimum-stability setting
+   see <https://getcomposer.org/doc/04-schema.md#minimum-stability> for more details.
+ - It's a private package and you forgot to add a custom repository to find it
+
+Read <https://getcomposer.org/doc/articles/troubleshooting.md> for further common problems.
