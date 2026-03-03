@@ -1,0 +1,19 @@
+{
+    "page": 1,
+    "page_size": 10,
+    "filters": [
+        // {
+        //     "field": "company_name",
+        //     "condition": "contains",
+        //     "text": "cw"
+        // }
+        // {
+        //     "field": "created_at",
+        //     "condition": "between",
+        //     "text": [
+        //         "2025-09-01",
+        //         "2025-09-12"
+        //     ]
+        // }
+    ]
+}
