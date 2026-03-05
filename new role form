@@ -224,3 +224,269 @@ export default function RoleForm() {
         }
     }
 }
+
+
+
+
+"use client";
+
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+
+export const permissionGroups = [
+  {
+    name: "Manage User",
+    key: "user",
+    actions: ["list", "create", "update", "delete"],
+  },
+  {
+    name: "Manage Role",
+    key: "role",
+    actions: ["list", "create", "update", "delete"],
+  },
+  {
+    name: "Manage Company",
+    key: "company",
+    actions: ["list", "create", "update", "delete", "login-to-company"],
+  },
+];
+
+type FormValues = {
+  name: string;
+  description?: string;
+  permissions: Record<string, boolean>;
+};
+
+type ApiPermission = Record<string, string[]>;
+
+type ApiBody = {
+  role_name: string;
+  permission: ApiPermission;
+  description: string | null;
+};
+
+// Form action → API action
+const ACTION_MAP: Record<string, string> = {
+  list: "list",
+  create: "create",
+  update: "update",
+  delete: "delete",
+  "login-to-company": "login-to-company",
+};
+
+// API action → form action (reverse map)
+const REVERSE_ACTION_MAP: Record<string, string> = Object.fromEntries(
+  Object.entries(ACTION_MAP).map(([formAction, apiAction]) => [apiAction, formAction])
+);
+
+// Convert API role permission object → flat form permissions record
+function apiPermissionsToFormValues(apiPermission: ApiPermission): Record<string, boolean> {
+  const flat: Record<string, boolean> = {};
+
+  permissionGroups.forEach((group) => {
+    const apiActions = apiPermission[group.key] ?? [];
+
+    group.actions.forEach((formAction) => {
+      const apiAction = ACTION_MAP[formAction] ?? formAction;
+      flat[`${group.key}_${formAction}`] = apiActions.includes(apiAction);
+    });
+  });
+
+  return flat;
+}
+
+// Convert flat form permissions → API permission object
+function buildApiBody(data: FormValues): ApiBody {
+  const permission: ApiPermission = {};
+
+  permissionGroups.forEach((group) => {
+    const selectedActions = group.actions
+      .filter((action) => data.permissions?.[`${group.key}_${action}`])
+      .map((action) => ACTION_MAP[action] ?? action);
+
+    if (selectedActions.length > 0) {
+      permission[group.key] = selectedActions;
+    }
+  });
+
+  return {
+    role_name: data.name,
+    permission,
+    description: data.description?.trim() || null,
+  };
+}
+
+// --- Simulated API response (replace with real fetch) ---
+const MOCK_ROLE_RESPONSE = {
+  has_error: false,
+  message: "Role fetched successfully",
+  role: {
+    id: 2,
+    role_name: "AdminT",
+    description: null,
+    permission: {
+      role: ["list", "create"],
+      user: ["list", "view", "create", "update"],
+      company: ["list", "create"],
+    },
+  },
+};
+
+export default function UpdateRoleForm({ roleId }: { roleId?: number }) {
+  const { register, handleSubmit, watch, setValue, reset } = useForm<FormValues>();
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+
+  const permissions = watch("permissions") || {};
+
+  // Populate form from API response
+  useEffect(() => {
+    // TODO: replace with real API call:
+    // const res = await fetch(`/api/roles/${roleId}`);
+    // const { role } = await res.json();
+    const { role } = MOCK_ROLE_RESPONSE;
+
+    reset({
+      name: role.role_name,
+      description: role.description ?? "",
+      permissions: apiPermissionsToFormValues(role.permission as ApiPermission),
+    });
+
+    setLoading(false);
+  }, [roleId, reset]);
+
+  const toggleExpand = (key: string) => {
+    setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const toggleGroup = (groupKey: string, actions: string[], checked: boolean) => {
+    actions.forEach((action) => {
+      setValue(`permissions.${groupKey}_${action}`, checked);
+    });
+  };
+
+  const isGroupChecked = (groupKey: string, actions: string[]) =>
+    actions.every((action) => permissions[`${groupKey}_${action}`]);
+
+  const isGroupIndeterminate = (groupKey: string, actions: string[]) => {
+    const checkedCount = actions.filter((a) => permissions[`${groupKey}_${a}`]).length;
+    return checkedCount > 0 && checkedCount < actions.length;
+  };
+
+  const onSubmit = (data: FormValues) => {
+    const apiBody = buildApiBody(data);
+    console.log("Update API Body:", JSON.stringify(apiBody, null, 2));
+    // TODO: call your update API here, e.g.:
+    // await fetch(`/api/roles/${roleId}`, { method: "PUT", body: JSON.stringify(apiBody) });
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow p-6">
+        <p className="text-gray-500">Loading role...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow p-6">
+      <h2 className="text-xl font-semibold mb-6">Update Role</h2>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+        {/* Role Name */}
+        <div>
+          <label className="font-medium">
+            Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            {...register("name", { required: true })}
+            className="w-full border rounded-md px-3 py-2 mt-2"
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="font-medium">Description</label>
+          <input
+            {...register("description")}
+            className="w-full border rounded-md px-3 py-2 mt-2"
+            placeholder="Optional"
+          />
+        </div>
+
+        {/* Permissions */}
+        <div>
+          <h3 className="font-semibold mb-4">Select Permissions</h3>
+
+          <div className="space-y-4">
+            {permissionGroups.map((group) => {
+              const checked = isGroupChecked(group.key, group.actions);
+              const indeterminate = isGroupIndeterminate(group.key, group.actions);
+
+              return (
+                <div key={group.key} className="border rounded-md p-4">
+
+                  {/* Group Header */}
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(group.key)}
+                      className="text-red-500 font-bold"
+                    >
+                      {expanded[group.key] ? "-" : "+"}
+                    </button>
+
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      ref={(el) => {
+                        if (el) el.indeterminate = indeterminate;
+                      }}
+                      onChange={(e) =>
+                        toggleGroup(group.key, group.actions, e.target.checked)
+                      }
+                    />
+
+                    <span className="font-medium">{group.name}</span>
+                  </div>
+
+                  {/* Children Permissions */}
+                  {expanded[group.key] && (
+                    <div className="grid grid-cols-4 gap-6 mt-4 ml-6">
+                      {group.actions.map((action) => {
+                        const key = `${group.key}_${action}`;
+                        return (
+                          <label key={key} className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              {...register(`permissions.${key}`)}
+                            />
+                            {action.charAt(0).toUpperCase() + action.slice(1)}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex justify-end gap-3">
+          <button type="button" className="border px-4 py-2 rounded-md">
+            Back
+          </button>
+          <button
+            type="submit"
+            className="bg-green-600 text-white px-4 py-2 rounded-md"
+          >
+            Update
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
