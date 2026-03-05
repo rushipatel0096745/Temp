@@ -197,3 +197,30 @@ export default function RoleForm() {
     </div>
   );
 }
+
+
+{
+    "has_error": false,
+    "message": "Role fetched successfully",
+    "role": {
+        "id": 2,
+        "role_name": "AdminT",
+        "description": null,
+        "permission": {
+            "role": [
+                "list",
+                "create"
+            ],
+            "user": [
+                "list",
+                "view",
+                "create",
+                "update"
+            ],
+            "company": [
+                "list",
+                "create"
+            ]
+        }
+    }
+}
