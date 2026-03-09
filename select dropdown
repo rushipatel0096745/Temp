@@ -1,23 +1,31 @@
 "use client";
-
 import React, { useState } from "react";
 import Modal from "./Modal";
-import Select from "react-select/base";
-import { Asset } from "../(admin)/tag/edit/[id]/page";
+
+const UnassignTagModal = ({ isOpen, isClose }: { isOpen: boolean; isClose: () => void }) => {
+    const [reason, setReason] = useState<string>();
+    const [showOtherReason, setShowOtherReason] = useState<boolean>(false);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        // setReason(e.target.value);
+        const value = e.target.value;
+
+        if (value === "Other reason") {
+            setShowOtherReason(true);
+            setReason(value)
+        } else {
+            setShowOtherReason(false);
+            setReason(value)
+        }
 
 
-const AssignTagModal = ({ isOpen, isClose, assetList }: { isOpen: boolean; isClose: () => void; assetList: Asset[] }) => {
-    const [selected, setSelected] = useState(null);
-
-    function handleChange () {
-
-    }
+    };
 
     return (
         <Modal isOpen={isOpen} onClose={isClose}>
             <div className='popup-inner max-w-[710px] bg-white p-5.5 rounded-3xl w-[90%] relative'>
-                <div className='popup-head border-b border-solid border-[#ececec] flex items-center justify-between'>
-                    <h3 className='h3 text-xl leading-6 font-semibold'>Assign Tag</h3>
+                <div className='popup-head border-b border-solid border-[#ededed] flex items-center justify-between'>
+                    <h3 className='h3 text-xl leading-6 font-semibold'>Unassign Tag</h3>
                     <button
                         onClick={isClose}
                         className='close-btn cursor-pointer bg-[family-name:--bg-primary] border-0 rounded-[10px] justify-center items-center w-[38px] h-[38px] ml-auto p-0 transition-all duration-300 flex'>
@@ -37,31 +45,58 @@ const AssignTagModal = ({ isOpen, isClose, assetList }: { isOpen: boolean; isClo
                         </svg>
                     </button>
                 </div>
-                <div className='popup-content max-h-[calc(90vh-89px)]'>
-                    <div className='new-question-item-details'>
-                        <div className='add-question-wrapper'>
-                            <div className='fancy-input relative'>
-                                <Select
-                                    options={assetList} 
-                                    onMenuOpen={()=>console.log("menu is open")}
-                                    onChange={handleChange}
-                                    placeholder='Search users...'
-                                />
+                <div className='popup-content max-h-[calc(90vh-89px)]' onClick={(e) => e.stopPropagation()}>
+                    <form>
+                        <div className='unassign-new-tag flex flex-col items-center gap-4 w-full'>
+                            <div className='fancy-input select col w-full relative'>
+                                <select
+                                    name='reason'
+                                    id='reason'
+                                    className='form-select cursor-pointer text-[#17181a] box-border bg-[#f5f6fa] border border-[#efefef] rounded-[10px] w-full h-[44px] pt-[18px] px-[14px] pb-[8px] font-sans text-[14px] font-medium'>
+                                    <option value='Physically broken'>Physically broken</option>
+                                    <option value='Unreadable'>Unreadable</option>
+                                    <option value='Heat damage'>Heat damage</option>
+                                    <option value='Detached from asset'>Detached from asset</option>
+                                    <option value='Other reason'>Other reason</option>
+                                </select>
+                                <label
+                                    htmlFor=''
+                                    className='form-label text-[#878d99] text-[11px] top-4 bg-[#0000] py-0.5 absolute left-3 transform -translate-y-1/2'>
+                                    Reason
+                                </label>
                             </div>
+
+                            {showOtherReason && (
+                                <div className='other-reason-block col w-full'>
+                                    <h5 className='title h4 mb-3 text-[16px] font-semibold leading-5.5'>
+                                        Other Reason
+                                    </h5>
+                                    <textarea
+                                        onChange={handleChange}
+                                        className='form-textarea min-h-[100px] align-bottom bg-[#f5f6fa] border border-solid border-[#efefef] rounded-[10px] w-full px-2.5 py-3 text-[14px]'
+                                        placeholder='Type your question here'
+                                        defaultValue={""}
+                                    />
+                                </div>
+                            )}
                         </div>
-                    </div>
-                    <div className='actions-btn flex justify-end gap-2.5 mt-5.5 items-center'>
-                        <button className='btn success all-unset cursor-pointer text-center bg-[#2aa466] border border-[#2aa466] text-[#fff] box-border rounded-[40px] justify-center items-center gap-[6px] h-[38px] px-[14px] py-[10px] text-[14px] font-medium transition-all duration-200 inline-flex'>
-                            Save
-                        </button>
-                        <button className='btn danger-light all-unset cursor-pointer text-center bg-[#263f94] border border-[#263f94] text-[#fff] box-border rounded-[40px] justify-center items-center gap-[6px] h-[38px] px-[14px] py-[10px] text-[14px] font-medium transition-all duration-200 inline-flex'>
-                            Cancel
-                        </button>
-                    </div>
+                        <div className='actions-btn flex justify-end gap-2.5 mt-5.5 items-center'>
+                            <button
+                                // onClick={saveSelection}
+                                className='btn success all-unset cursor-pointer text-center bg-[#2aa466] border border-[#2aa466] text-[#fff] box-border rounded-[40px] justify-center items-center gap-[6px] h-[38px] px-[14px] py-[10px] text-[14px] font-medium transition-all duration-200 inline-flex'>
+                                Save
+                            </button>
+                            <button
+                                onClick={isClose}
+                                className='btn danger-light all-unset cursor-pointer text-center bg-[#263f94] border border-[#263f94] text-[#fff] box-border rounded-[40px] justify-center items-center gap-[6px] h-[38px] px-[14px] py-[10px] text-[14px] font-medium transition-all duration-200 inline-flex'>
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </Modal>
     );
 };
 
-export default AssignTagModal;
+export default UnassignTagModal;
