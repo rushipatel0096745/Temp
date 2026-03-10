@@ -1,0 +1,165 @@
+"use client";
+
+import Link from "next/link";
+import React, { startTransition, useActionState, useState } from "react";
+import { Location } from "../(admin)/location-master/page";
+
+const LocationForm = ({ action, initialData, locationId }: { initialData: Location; locationId: number }) => {
+    // console.log(initialData)
+
+    const [location, setLocation] = useState(locationId ? initialData.name : "");
+
+    const [showMsg, setShowMsg] = useState("");
+
+    const [error, setError] = useState("");
+
+    const [state, formAction, isPending] = useActionState(locationId ? action.bind(null, locationId) : action, {
+        success: null,
+        error: "",
+        data: "",
+    });
+
+    function handleSubmit() {
+        if (!location) {
+            setError("Please enter the location value");
+            return;
+        }
+        startTransition(() => formAction({ name: location }));
+        setShowMsg("Location successfully updated");
+    }
+
+    return (
+        <div className='card-box bg-white rounded-[18px]'>
+            <div className='card-box_head border-0 min-h-21 pt-5.5 px-5.5 pb-6 flex justify-between items-center'>
+                <h3 className='title h3 text-[18px] font-semibold leading-6'>
+                    {locationId ? "Edit Location" : "Add Location"}
+                </h3>
+                <div className='actions-btn flex gap-2 items-center'>
+                    <Link
+                        className='icon-text-button default all-unset cursor-pointer bg-white border border-[#845adf26] rounded-full items-center pt-1 pr-3 pb-1 pl-1 text-[14px] font-medium transition-colors duration-200 inline-flex'
+                        href='/company-admin/location-master'>
+                        <span className='icon-circle bg-[#845adf26] rounded-[50px] justify-center items-center w-7 h-7 flex'>
+                            <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                width={20}
+                                height={20}
+                                viewBox='0 0 20 20'
+                                fill='none'>
+                                <path
+                                    fillRule='evenodd'
+                                    clipRule='evenodd'
+                                    d='M9.53033 15.7804C9.23743 16.0733 8.76256 16.0733 8.46967 15.7804L3.21967 10.5304C2.92678 10.2375 2.92678 9.76259 3.21967 9.4697L8.46967 4.2197C8.76256 3.92681 9.23743 3.92681 9.53033 4.2197C9.82322 4.51259 9.82322 4.98747 9.53033 5.28036L5.56066 9.25003L16.25 9.25003C16.6642 9.25003 17 9.58582 17 10C17 10.4142 16.6642 10.75 16.25 10.75L5.56066 10.75L9.53033 14.7197C9.82322 15.0126 9.82322 15.4875 9.53033 15.7804Z'
+                                    fill='#919191'
+                                />
+                            </svg>
+                        </span>
+                        <span className='button-label text-[#1a1a1a] capitalize ml-2'>Back</span>
+                    </Link>
+                    <button
+                        onClick={handleSubmit}
+                        className='icon-text-button secondary all-unset cursor-pointer bg-white border border-[#845adf26] rounded-full items-center pt-1 pr-3 pb-1 pl-1 text-[14px] font-medium transition-colors duration-200 inline-flex'
+                        type='button'>
+                        <span className='icon-circle bg-[#845adf26] rounded-[50px] justify-center items-center w-7 h-7 flex'>
+                            <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                width={20}
+                                height={20}
+                                viewBox='0 0 20 20'
+                                fill='none'>
+                                <path
+                                    d='M15.8333 14.1667H6.66585C5.8374 14.1667 5.58642 14.174 5.40121 14.2236C4.82615 14.3778 4.37691 14.8269 4.22282 15.402C4.207 15.4611 4.1936 15.541 4.18376 15.6714C4.18769 15.7549 4.19154 15.8333 4.19759 15.9074C4.22744 16.2727 4.28174 16.4598 4.34815 16.5902C4.50792 16.9037 4.76296 17.1587 5.0765 17.3185C5.20683 17.3849 5.39393 17.4392 5.75928 17.4691C6.13431 17.4997 6.61951 17.5 7.33317 17.5H14.6663C15.0301 17.5 15.2533 17.499 15.4199 17.4853C15.4974 17.479 15.5444 17.4717 15.5729 17.465C15.5863 17.4619 15.5944 17.4585 15.599 17.4569C15.6027 17.4555 15.6048 17.4547 15.6055 17.4544C15.6839 17.4145 15.7478 17.3505 15.7878 17.2721C15.7881 17.2715 15.7889 17.2693 15.7902 17.2656C15.7918 17.261 15.7952 17.2529 15.7983 17.2396C15.8051 17.2111 15.8124 17.1641 15.8187 17.0866C15.8323 16.9199 15.8333 16.6968 15.8333 16.333V14.1667ZM9.16667 7.61636L10.0277 7.04751C10.1068 6.99516 10.3155 6.8424 10.5648 6.78303L10.7088 6.7578C10.8056 6.74645 10.9034 6.74645 11.0002 6.7578L11.1442 6.78303L11.2354 6.80988C11.4434 6.87953 11.6121 7.0017 11.6813 7.04751L12.5423 7.61636V2.49999H9.16667V7.61636ZM15.8333 3.66698C15.8333 3.30319 15.8323 3.08003 15.8187 2.9134C15.8124 2.83592 15.8051 2.78891 15.7983 2.7604C15.7952 2.74706 15.7918 2.73892 15.7902 2.73436C15.7889 2.73063 15.7881 2.72851 15.7878 2.72785C15.7478 2.64945 15.6839 2.58551 15.6055 2.54556C15.6048 2.54523 15.6027 2.54445 15.599 2.54312C15.5944 2.5415 15.5863 2.53812 15.5729 2.53498C15.5444 2.52827 15.4974 2.52097 15.4199 2.51463C15.2533 2.50102 15.0301 2.49999 14.6663 2.49999H14.209V7.92642C14.209 8.11134 14.21 8.30829 14.1952 8.47004C14.1811 8.62367 14.1436 8.89706 13.9567 9.14468C13.737 9.43581 13.4011 9.61668 13.0371 9.63947C12.7276 9.6588 12.4789 9.53912 12.3429 9.46613C12.1998 9.38929 12.0358 9.28005 11.8815 9.17805L10.8545 8.49852L9.82748 9.17805C9.67318 9.28005 9.50918 9.38929 9.36605 9.46613C9.23009 9.53912 8.98137 9.6588 8.67188 9.63947C8.30786 9.61668 7.97199 9.43581 7.75228 9.14468C7.56542 8.89706 7.52792 8.62367 7.51384 8.47004C7.49902 8.30829 7.5 8.11134 7.5 7.92642V2.49999H7.33317C6.61951 2.49999 6.13431 2.50028 5.75928 2.53091C5.39393 2.56076 5.20683 2.61506 5.0765 2.68146C4.76295 2.84124 4.50792 3.09627 4.34815 3.40982C4.28174 3.54015 4.22744 3.72725 4.19759 4.0926C4.16696 4.46763 4.16667 4.95283 4.16667 5.66649V12.946C4.41549 12.8024 4.68505 12.6903 4.96989 12.6139C5.42045 12.4932 5.94464 12.5 6.66585 12.5H15.8333V3.66698ZM17.5 16.333C17.5 16.6693 17.5009 16.9722 17.4805 17.2225C17.4592 17.4823 17.4108 17.7584 17.273 18.029C17.0732 18.421 16.7543 18.7399 16.3623 18.9396C16.0917 19.0775 15.8157 19.1259 15.5558 19.1471C15.3056 19.1676 15.0026 19.1667 14.6663 19.1667H7.33317C6.64693 19.1667 6.08202 19.1675 5.62337 19.13C5.15499 19.0918 4.72408 19.0098 4.31966 18.8037C3.69257 18.4841 3.18251 17.9741 2.86296 17.347C2.65689 16.9426 2.5749 16.5117 2.53662 16.0433C2.52899 15.9499 2.52514 15.8518 2.52035 15.7495C2.51809 15.7261 2.51572 15.7026 2.51546 15.6787C2.49985 15.2943 2.5 14.848 2.5 14.3335V5.66649C2.5 4.98025 2.49915 4.41534 2.53662 3.95669C2.5749 3.48831 2.65689 3.0574 2.86296 2.65298C3.18251 2.02589 3.69257 1.51583 4.31966 1.19627C4.72408 0.990212 5.15499 0.908214 5.62337 0.86994C6.08202 0.832467 6.64693 0.833319 7.33317 0.833319H14.6663C15.0026 0.833319 15.3056 0.832404 15.5558 0.85285C15.8157 0.874099 16.0917 0.922522 16.3623 1.06037C16.7543 1.26011 17.0732 1.57901 17.273 1.97101L17.321 2.07274C17.4227 2.31036 17.4619 2.55018 17.4805 2.77749C17.5009 3.02774 17.5 3.3307 17.5 3.66698V16.333Z'
+                                    fill='#2AA466'
+                                />
+                            </svg>
+                        </span>
+                        <span className='button-label text-[#1a1a1a] capitalize ml-2'>Save</span>
+                    </button>
+                </div>
+            </div>
+            <div className='card-box_body pt-0 px-5.5 pl-22px'>
+                {state?.error ||
+                    (error && (
+                        <div className='text-red-500'>
+                            <p>{state?.error || error}</p>
+                        </div>
+                    ))}
+
+                {showMsg && (
+                    <div className='text-green-700'>
+                        <p>{showMsg}</p>
+                    </div>
+                )}
+                <form>
+                    <div className='row form-row flex wrap gap-4 w-full pb-12'>
+                        <div className='col w-full'>
+                            <div className='fancy-input relative'>
+                                <input
+                                    id='name'
+                                    placeholder=''
+                                    type='text'
+                                    // defaultValue=''
+                                    value={location}
+                                    name='location_name'
+                                    onChange={(e) => {
+                                        setError("");
+                                        setLocation(e.target.value);
+                                    }}
+                                    className='peer w-full h-11 border border-[#efefef] rounded-[10px] px-3.5 pt-4.5 pb-2'
+                                />
+                                <label
+                                    htmlFor='name'
+                                    className=' absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none bg-transparent px-0.5 text-[14px] text-[#676767] transition-all duration-200
+                                                peer-placeholder-shown:text-[14px] peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2
+                                                peer-focus:top-2 peer-focus:text-[10px]'>
+                                    Location Name<span className='require ml-px text-red-600 inline-block'>*</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default LocationForm;
+
+
+Property 'action' does not exist on type '{ initialData: Location; locationId: number; }'.ts(2339)
+(parameter) action: any
+
+
+Expected 0 arguments, but got 1.ts(2554)
+(property) name: string
+
+
+
+import LocationForm from "@/app/company-admin/components/LocationForm";
+import { getLocation, updateLocation } from "@/app/services/company-admin/location";
+import React, { Suspense } from "react";
+
+const LocationEditPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+    const { id } = await params;
+
+    const initialData = await getLocation(Number(id));
+    return (
+        <div className='main w-[calc(100%] min-h-[calc(100vh_-_60px)] text-[#111c43] mt-[60px] p-5.5 '>
+            <div className='page-content'>
+                <div className='page-head mb-6'>
+                    <h2 className='text-[20px] leading-6.5 font-semibold'>Location Master</h2>
+                </div>
+                <div className='page-body'>
+                    <Suspense fallback={<p>Loading....</p>}>
+                        <LocationForm action={updateLocation} initialData={initialData} locationId={Number(id)}/>
+                    </Suspense>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default LocationEditPage;
+
+
+Type '{ action: (id: number, prevState: any, formData: any) => Promise<void>; initialData: any; locationId: number; }' is not assignable to type 'IntrinsicAttributes & { initialData: Location; locationId: number; }'.
+  Property 'action' does not exist on type 'IntrinsicAttributes & { initialData: Location; locationId: number; }'.
