@@ -163,3 +163,13 @@ export default LocationEditPage;
 
 Type '{ action: (id: number, prevState: any, formData: any) => Promise<void>; initialData: any; locationId: number; }' is not assignable to type 'IntrinsicAttributes & { initialData: Location; locationId: number; }'.
   Property 'action' does not exist on type 'IntrinsicAttributes & { initialData: Location; locationId: number; }'.
+
+
+No overload matches this call.
+  Overload 1 of 2, '(action: (state: void) => void | Promise<void>, initialState: void, permalink?: string | undefined): [state: void, dispatch: () => void, isPending: boolean]', gave the following error.
+    Argument of type 'LocationFormAction' is not assignable to parameter of type '(state: void) => void | Promise<void>'.
+      Target signature provides too few arguments. Expected 3 or more, but got 1.
+  Overload 2 of 2, '(action: (state: void, payload: any) => void | Promise<void>, initialState: void, permalink?: string | undefined): [state: void, dispatch: (payload: any) => void, isPending: boolean]', gave the following error.
+    Argument of type 'LocationFormAction' is not assignable to parameter of type '(state: void, payload: any) => void | Promise<void>'.
+      Target signature provides too few arguments. Expected 3 or more, but got 2.ts(2769)
+(parameter) locationId: number
