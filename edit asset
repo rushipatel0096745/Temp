@@ -1,0 +1,590 @@
+"use client";
+import React, { useState } from "react";
+
+const TempTest = () => {
+  const [questions, setQuestions] = useState([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  const [currentQuestion, setCurrentQuestion] = useState({
+    question: "",
+    type: "",
+    options: [] as string[],
+  });
+
+  // ---------- Editor Logic ----------
+
+  function updateCurrent(field: string, value: string) {
+    if (field === "type") {
+      if (value === "select" || value === "checkbox") {
+        setCurrentQuestion((prev) => ({
+          ...prev,
+          type: value,
+          options: prev.options.length ? prev.options : [""],
+        }));
+      } else {
+        setCurrentQuestion({
+          ...currentQuestion,
+          type: value,
+          options: [],
+        });
+      }
+    } else {
+      setCurrentQuestion({
+        ...currentQuestion,
+        [field]: value,
+      });
+    }
+  }
+
+  function addOption() {
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      options: [...prev.options, ""],
+    }));
+  }
+
+  function updateOption(index: number, value: string) {
+    setCurrentQuestion((prev) => {
+      const updated = [...prev.options];
+      updated[index] = value;
+      return { ...prev, options: updated };
+    });
+  }
+
+  function deleteOption(index: number) {
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      options: prev.options.filter((_, i) => i !== index),
+    }));
+  }
+
+  function addQuestion() {
+    if (!currentQuestion.question || !currentQuestion.type) return;
+
+    setQuestions((prev) => [...prev, currentQuestion]);
+
+    setCurrentQuestion({
+      question: "",
+      type: "",
+      options: [],
+    });
+  }
+
+  // ---------- Question Update ----------
+
+  function updateQuestion(index: number, field: string, value: string) {
+    setQuestions((prev) =>
+      prev.map((q, i) => {
+        if (i !== index) return q;
+
+        if (field === "type") {
+          if (value === "select" || value === "checkbox") {
+            return {
+              ...q,
+              type: value,
+              options: q.options.length ? q.options : [""],
+            };
+          }
+
+          return {
+            ...q,
+            type: value,
+            options: [],
+          };
+        }
+
+        return { ...q, [field]: value };
+      }),
+    );
+  }
+
+  function updateQuestionOption(
+    qIndex: number,
+    optIndex: number,
+    value: string,
+  ) {
+    setQuestions((prev) =>
+      prev.map((q, i) => {
+        if (i !== qIndex) return q;
+
+        const updated = [...q.options];
+        updated[optIndex] = value;
+
+        return { ...q, options: updated };
+      }),
+    );
+  }
+
+  function deleteQuestion(index: number) {
+    setQuestions((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* ---------- Question Editor ---------- */}
+
+      <div className="border p-4 rounded space-y-3">
+        <h2 className="font-bold text-lg">Add Question</h2>
+
+        <textarea
+          className="border w-full p-2"
+          placeholder="Enter question"
+          value={currentQuestion.question}
+          onChange={(e) => updateCurrent("question", e.target.value)}
+        />
+
+        <select
+          className="border p-2"
+          value={currentQuestion.type}
+          onChange={(e) => updateCurrent("type", e.target.value)}
+        >
+          <option value="">Select type</option>
+          <option value="text">Textfield</option>
+          <option value="boolean">Yes / No</option>
+          <option value="select">Select</option>
+          <option value="checkbox">Checkbox</option>
+        </select>
+
+        {(currentQuestion.type === "select" ||
+          currentQuestion.type === "checkbox") && (
+          <div className="space-y-2">
+            {currentQuestion.options.map((opt, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  className="border p-2"
+                  value={opt}
+                  placeholder={`Option ${index + 1}`}
+                  onChange={(e) => updateOption(index, e.target.value)}
+                />
+
+                <button
+                  className="bg-red-500 text-white px-2"
+                  onClick={() => deleteOption(index)}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+
+            <button
+              className="bg-green-500 text-white px-3 py-1"
+              onClick={addOption}
+            >
+              Add Option
+            </button>
+          </div>
+        )}
+
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={addQuestion}
+        >
+          Add Question
+        </button>
+      </div>
+
+      {/* ---------- Question List ---------- */}
+
+      <div className="space-y-4">
+        {questions.map((q, index) => (
+          <div key={index} className="border p-4 rounded">
+            {editingIndex === index ? (
+              <>
+                {/* Edit Mode */}
+
+                <textarea
+                  className="border w-full p-2"
+                  value={q.question}
+                  onChange={(e) =>
+                    updateQuestion(index, "question", e.target.value)
+                  }
+                />
+
+                <select
+                  className="border p-2 mt-2"
+                  value={q.type}
+                  onChange={(e) =>
+                    updateQuestion(index, "type", e.target.value)
+                  }
+                >
+                  <option value="text">Textfield</option>
+                  <option value="boolean">Yes / No</option>
+                  <option value="select">Select</option>
+                  <option value="checkbox">Checkbox</option>
+                </select>
+
+                {(q.type === "select" || q.type === "checkbox") && (
+                  <div className="mt-2 space-y-2">
+                    {q.options.map((opt, optIndex) => (
+                      <input
+                        key={optIndex}
+                        className="border p-2 block"
+                        value={opt}
+                        onChange={(e) =>
+                          updateQuestionOption(
+                            index,
+                            optIndex,
+                            e.target.value,
+                          )
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  className="bg-green-500 text-white px-3 py-1 mt-3"
+                  onClick={() => setEditingIndex(null)}
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Display Mode */}
+
+                <p>
+                  <strong>Question:</strong> {q.question}
+                </p>
+
+                <p>
+                  <strong>Type:</strong> {q.type}
+                </p>
+
+                {(q.type === "select" || q.type === "checkbox") && (
+                  <ul className="list-disc ml-6">
+                    {q.options.map((opt, i) => (
+                      <li key={i}>{opt}</li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="flex gap-2 mt-3">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1"
+                    onClick={() => setEditingIndex(index)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="bg-red-500 text-white px-3 py-1"
+                    onClick={() => deleteQuestion(index)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TempTest;
+
+
+
+// with id 
+"use client";
+import React, { useState } from "react";
+
+type Question = {
+  id: string;
+  question: string;
+  type: string;
+  options: string[];
+};
+
+const TempTest = () => {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [currentQuestion, setCurrentQuestion] = useState({
+    question: "",
+    type: "",
+    options: [] as string[],
+  });
+
+  // ---------- Editor Logic ----------
+
+  function updateCurrent(field: string, value: string) {
+    if (field === "type") {
+      if (value === "select" || value === "checkbox") {
+        setCurrentQuestion((prev) => ({
+          ...prev,
+          type: value,
+          options: prev.options.length ? prev.options : [""],
+        }));
+      } else {
+        setCurrentQuestion((prev) => ({
+          ...prev,
+          type: value,
+          options: [],
+        }));
+      }
+    } else {
+      setCurrentQuestion((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
+  }
+
+  function addOption() {
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      options: [...prev.options, ""],
+    }));
+  }
+
+  function updateOption(index: number, value: string) {
+    setCurrentQuestion((prev) => {
+      const updated = [...prev.options];
+      updated[index] = value;
+      return { ...prev, options: updated };
+    });
+  }
+
+  function deleteOption(index: number) {
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      options: prev.options.filter((_, i) => i !== index),
+    }));
+  }
+
+  function addQuestion() {
+    if (!currentQuestion.question || !currentQuestion.type) return;
+
+    const newQuestion: Question = {
+      id: crypto.randomUUID(),
+      question: currentQuestion.question,
+      type: currentQuestion.type,
+      options: currentQuestion.options,
+    };
+
+    setQuestions((prev) => [...prev, newQuestion]);
+
+    setCurrentQuestion({
+      question: "",
+      type: "",
+      options: [],
+    });
+  }
+
+  // ---------- Question Update ----------
+
+  function updateQuestion(id: string, field: string, value: string) {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== id) return q;
+
+        if (field === "type") {
+          if (value === "select" || value === "checkbox") {
+            return {
+              ...q,
+              type: value,
+              options: q.options.length ? q.options : [""],
+            };
+          }
+
+          return {
+            ...q,
+            type: value,
+            options: [],
+          };
+        }
+
+        return { ...q, [field]: value };
+      }),
+    );
+  }
+
+  function updateQuestionOption(
+    questionId: string,
+    optIndex: number,
+    value: string,
+  ) {
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== questionId) return q;
+
+        const updated = [...q.options];
+        updated[optIndex] = value;
+
+        return { ...q, options: updated };
+      }),
+    );
+  }
+
+  function deleteQuestion(id: string) {
+    setQuestions((prev) => prev.filter((q) => q.id !== id));
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* ---------- Question Editor ---------- */}
+
+      <div className="border p-4 rounded space-y-3">
+        <h2 className="font-bold text-lg">Add Question</h2>
+
+        <textarea
+          className="border w-full p-2"
+          placeholder="Enter question"
+          value={currentQuestion.question}
+          onChange={(e) => updateCurrent("question", e.target.value)}
+        />
+
+        <select
+          className="border p-2"
+          value={currentQuestion.type}
+          onChange={(e) => updateCurrent("type", e.target.value)}
+        >
+          <option value="">Select type</option>
+          <option value="text">Textfield</option>
+          <option value="boolean">Yes / No</option>
+          <option value="select">Select</option>
+          <option value="checkbox">Checkbox</option>
+        </select>
+
+        {(currentQuestion.type === "select" ||
+          currentQuestion.type === "checkbox") && (
+          <div className="space-y-2">
+            {currentQuestion.options.map((opt, index) => (
+              <div key={index} className="flex gap-2">
+                <input
+                  className="border p-2"
+                  value={opt}
+                  placeholder={`Option ${index + 1}`}
+                  onChange={(e) => updateOption(index, e.target.value)}
+                />
+
+                <button
+                  className="bg-red-500 text-white px-2"
+                  onClick={() => deleteOption(index)}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
+
+            <button
+              className="bg-green-500 text-white px-3 py-1"
+              onClick={addOption}
+            >
+              Add Option
+            </button>
+          </div>
+        )}
+
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={addQuestion}
+        >
+          Add Question
+        </button>
+      </div>
+
+      {/* ---------- Question List ---------- */}
+
+      <div className="space-y-4">
+        {questions.map((q) => (
+          <div key={q.id} className="border p-4 rounded">
+            {editingId === q.id ? (
+              <>
+                {/* Edit Mode */}
+
+                <textarea
+                  className="border w-full p-2"
+                  value={q.question}
+                  onChange={(e) =>
+                    updateQuestion(q.id, "question", e.target.value)
+                  }
+                />
+
+                <select
+                  className="border p-2 mt-2"
+                  value={q.type}
+                  onChange={(e) =>
+                    updateQuestion(q.id, "type", e.target.value)
+                  }
+                >
+                  <option value="text">Textfield</option>
+                  <option value="boolean">Yes / No</option>
+                  <option value="select">Select</option>
+                  <option value="checkbox">Checkbox</option>
+                </select>
+
+                {(q.type === "select" || q.type === "checkbox") && (
+                  <div className="mt-2 space-y-2">
+                    {q.options.map((opt, optIndex) => (
+                      <input
+                        key={optIndex}
+                        className="border p-2 block"
+                        value={opt}
+                        onChange={(e) =>
+                          updateQuestionOption(
+                            q.id,
+                            optIndex,
+                            e.target.value,
+                          )
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  className="bg-green-500 text-white px-3 py-1 mt-3"
+                  onClick={() => setEditingId(null)}
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Display Mode */}
+
+                <p>
+                  <strong>Question:</strong> {q.question}
+                </p>
+
+                <p>
+                  <strong>Type:</strong> {q.type}
+                </p>
+
+                {(q.type === "select" || q.type === "checkbox") && (
+                  <ul className="list-disc ml-6">
+                    {q.options.map((opt, i) => (
+                      <li key={i}>{opt}</li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="flex gap-2 mt-3">
+                  <button
+                    className="bg-blue-500 text-white px-3 py-1"
+                    onClick={() => setEditingId(q.id)}
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    className="bg-red-500 text-white px-3 py-1"
+                    onClick={() => deleteQuestion(q.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default TempTest;
