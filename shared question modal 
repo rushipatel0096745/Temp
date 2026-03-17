@@ -1,0 +1,45 @@
+// components/UpdateQuestionModal.tsx
+export const UpdateQuestionModal = ({ question, onClose, onSave }: UpdateModalProps) => {
+    ...
+};
+
+
+const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+const [editingSource, setEditingSource] = useState<"preuse" | "maintenance" | null>(null);
+
+
+function handleSaveUpdatedQuestion(updated: Question) {
+    if (editingSource === "preuse") {
+        setNewPreUseQuestions((prev) => prev.map((q) => q.id === updated.id ? updated : q));
+    } else if (editingSource === "maintenance") {
+        setNewMaintenanceQuestions((prev) => prev.map((q) => q.id === updated.id ? updated : q));
+    }
+    setEditingQuestion(null);
+    setEditingSource(null);
+}
+
+
+{/* Pre-use Update button */}
+<button onClick={() => { setEditingQuestion(question); setEditingSource("preuse"); }}>
+    Update
+</button>
+
+{/* Maintenance Update button */}
+<button onClick={() => { setEditingQuestion(question); setEditingSource("maintenance"); }}>
+    Update
+</button>
+
+
+
+return (
+    <>
+        {editingQuestion && (
+            <UpdateQuestionModal
+                question={editingQuestion}
+                onClose={() => { setEditingQuestion(null); setEditingSource(null); }}
+                onSave={handleSaveUpdatedQuestion}
+            />
+        )}
+        {/* rest of your JSX */}
+    </>
+);
