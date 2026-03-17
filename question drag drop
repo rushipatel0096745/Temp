@@ -1,0 +1,16 @@
+const dragItem = useRef<number | null>(null);
+const dragOverItem = useRef<number | null>(null);
+
+function handleDragSort() {
+    const items = [...newMaintenanceQuestions];
+    const draggedItem = items.splice(dragItem.current!, 1)[0];
+    items.splice(dragOverItem.current!, 0, draggedItem);
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setNewMaintenanceQuestions(items);
+}
+
+
+className={`selected-questions w-full transition-opacity ${
+    dragItem.current === index ? "opacity-40" : "opacity-100"
+}`}
