@@ -14,3 +14,48 @@ function handleDragSort() {
 className={`selected-questions w-full transition-opacity ${
     dragItem.current === index ? "opacity-40" : "opacity-100"
 }`}
+
+
+{newMaintenanceQuestions.map((question, index) => {
+    const question_type = questionTypes[question.type];
+    return (
+        <div
+            className='selected-questions w-full'
+            key={question.id}
+            draggable
+            onDragStart={() => (dragItem.current = index)}
+            onDragEnter={() => (dragOverItem.current = index)}
+            onDragEnd={handleDragSort}
+            onDragOver={(e) => e.preventDefault()}
+            style={{ cursor: "grab" }}
+        >
+            <div className='question-content flex justify-between p-2.5 border rounded-xl border-solid border-gray-400'>
+                {/* ⠿ grab handle icon */}
+                <span className="text-gray-400 mr-2 select-none">⠿</span>
+                <div className='question-text'>
+                    <p>{question.question}</p>
+                </div>
+                <div className='question-type gap-2 flex justify-between'>
+                    <p className='text-black'>
+                        <span className='text-gray-500'>Type: </span>
+                        {question_type}
+                    </p>
+                    <div className='action-btn flex justify-between gap-1'>
+                        <button
+                            type='button'
+                            onClick={() => setEditingQuestion(question)}
+                            className='bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 text-sm rounded'>
+                            Update
+                        </button>
+                        <button
+                            type='button'
+                            onClick={() => deleteNewMaintenaceQuestion(question.id!)}
+                            className='bg-red-500 hover:bg-red-600 text-white py-1 px-2 text-sm rounded'>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+})}
