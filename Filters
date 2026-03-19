@@ -1,0 +1,58 @@
+useEffect(() => {
+  if (!initialized) return;
+
+  // Save filters right before page unloads
+  const handleBeforeUnload = () => {
+    const cookieData = buildCookieFilters(filterState);
+    setCookie(COOKIE_KEY, cookieData, COOKIE_EXPIRY_DAYS);
+  };
+
+  // Re-apply filters when user navigates back/forward
+  const handlePopState = () => {
+    const saved = getCookie(COOKIE_KEY);
+    const restored = restoreFilterState(saved, columns, allConditions);
+    setFilterState(restored);
+    loadUsers(restored, 1);
+  };
+
+  // Re-sync when user returns to this tab
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      const saved = getCookie(COOKIE_KEY);
+      const restored = restoreFilterState(saved, columns, allConditions);
+      setFilterState(restored);
+    }
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('popstate', handlePopState);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // ⚠️ Always clean up to avoid memory leaks
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('popstate', handlePopState);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, [initialized, filterState, columns, allConditions]);
+```
+
+> ⚠️ The `return () => {}` cleanup is critical — without it, every re-render adds a new listener and you get stale closures reading old `filterState`.
+
+---
+
+## The Full Flow With Events
+```
+User types filter
+      ↓
+filterState (React state) updates live
+      ↓
+"Apply Filter" clicked  ──→  cookie written + API called
+      ↓
+User refreshes / closes tab
+      ↓
+beforeunload fires  ──→  cookie written (safety net)
+      ↓
+Page reloads
+      ↓
+useEffect on mount  ──→  cookie read + state restored + API called
