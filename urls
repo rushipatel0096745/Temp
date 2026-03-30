@@ -1,5 +1,7 @@
 https://chatgpt.com/share/69ca2628-5aa0-8323-a0a6-536307d5a056
 
+https://claude.ai/share/b2771603-21a7-4ce1-9d43-3877b2be0ed4
+
 
 const handleCheckboxChange = (module: string, action: string) => {
     setSelectedPermissions((prev) => {
