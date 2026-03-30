@@ -38,3 +38,203 @@ const handleCheckboxChange = (module: string, action: string) => {
         return updatedPermissions;
     });
 };
+
+
+<input
+    type='checkbox'
+    checked={selectedPermissions[module]?.includes(action) || false}
+    onChange={() => handleCheckboxChange(module, action)}
+    disabled={
+        module === "role" &&
+        action === "list" &&
+        selectedPermissions["user"]?.includes("create")
+    }
+/>
+
+
+
+const isDependencyActive = (module: string, action: string) => {
+    return Object.entries(permissionDependencies).some(
+        ([key, deps]) => {
+            const [depModule, depAction] = key.split(":");
+
+            return (
+                selectedPermissions[depModule]?.includes(depAction) &&
+                deps.some(
+                    (d) => d.module === module && d.action === action
+                )
+            );
+        }
+    );
+};
+
+
+const applyDependencies = (
+    permissions: Record<string, string[]>,
+    module: string,
+    action: string
+) => {
+    const key = `${module}:${action}`;
+    const deps = permissionDependencies[key];
+
+    if (!deps) return permissions;
+
+    let updated = { ...permissions };
+
+    deps.forEach(({ module: depModule, action: depAction }) => {
+        const existing = updated[depModule] || [];
+
+        if (!existing.includes(depAction)) {
+            updated[depModule] = [...existing, depAction];
+
+            // 🔥 recursive dependency support
+            updated = applyDependencies(updated, depModule, depAction);
+        }
+    });
+
+    return updated;
+};
+
+
+const handleCheckboxChange = (module: string, action: string) => {
+    setSelectedPermissions((prev) => {
+        const modulePermissions = prev[module] || [];
+
+        let updatedModulePermissions;
+
+        if (modulePermissions.includes(action)) {
+            // ❌ Prevent removing if dependency is active
+            if (isDependencyActive(module, action)) return prev;
+
+            updatedModulePermissions = modulePermissions.filter(
+                (a) => a !== action
+            );
+        } else {
+            updatedModulePermissions = [...modulePermissions, action];
+        }
+
+        let updatedPermissions = {
+            ...prev,
+            [module]: updatedModulePermissions,
+        };
+
+        // ✅ Apply dependencies when adding
+        if (!modulePermissions.includes(action)) {
+            updatedPermissions = applyDependencies(
+                updatedPermissions,
+                module,
+                action
+            );
+        }
+
+        return updatedPermissions;
+    });
+};
+
+
+
+
+
+
+
+
+
+const permissionDependencies: Record<
+    string,
+    { module: string; action: string }[]
+> = {
+    "user:create": [{ module: "role", action: "list" }],
+    // future examples:
+    // "asset:create": [{ module: "tags", action: "list" }]
+};
+
+
+const isDependencyActive = (module: string, action: string) => {
+    return Object.entries(permissionDependencies).some(
+        ([key, deps]) => {
+            const [depModule, depAction] = key.split(":");
+
+            return (
+                selectedPermissions[depModule]?.includes(depAction) &&
+                deps.some(
+                    (d) => d.module === module && d.action === action
+                )
+            );
+        }
+    );
+};
+
+
+const applyDependencies = (
+    permissions: Record<string, string[]>,
+    module: string,
+    action: string
+) => {
+    const key = `${module}:${action}`;
+    const deps = permissionDependencies[key];
+
+    if (!deps) return permissions;
+
+    let updated = { ...permissions };
+
+    deps.forEach(({ module: depModule, action: depAction }) => {
+        const existing = updated[depModule] || [];
+
+        if (!existing.includes(depAction)) {
+            updated[depModule] = [...existing, depAction];
+
+            // 🔥 recursive dependency support
+            updated = applyDependencies(updated, depModule, depAction);
+        }
+    });
+
+    return updated;
+};
+
+
+
+const handleCheckboxChange = (module: string, action: string) => {
+    setSelectedPermissions((prev) => {
+        const modulePermissions = prev[module] || [];
+
+        let updatedModulePermissions;
+
+        if (modulePermissions.includes(action)) {
+            // ❌ Prevent removing if dependency is active
+            if (isDependencyActive(module, action)) return prev;
+
+            updatedModulePermissions = modulePermissions.filter(
+                (a) => a !== action
+            );
+        } else {
+            updatedModulePermissions = [...modulePermissions, action];
+        }
+
+        let updatedPermissions = {
+            ...prev,
+            [module]: updatedModulePermissions,
+        };
+
+        // ✅ Apply dependencies when adding
+        if (!modulePermissions.includes(action)) {
+            updatedPermissions = applyDependencies(
+                updatedPermissions,
+                module,
+                action
+            );
+        }
+
+        return updatedPermissions;
+    });
+};
+
+
+
+<input
+    type='checkbox'
+    checked={selectedPermissions[module]?.includes(action) || false}
+    onChange={() => handleCheckboxChange(module, action)}
+    disabled={isDependencyActive(module, action)}
+/>
+
+
