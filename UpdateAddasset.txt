@@ -1,0 +1,200 @@
+// 1. Add this helper above the component or inside it
+const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpg", "image/jpeg"];
+const MAX_FILE_SIZE_MB = 5;
+
+// 2. Update updateForm to validate files immediately on selection
+const updateForm = function (name: string, value: any) {
+    // File validation for certificate fields
+    if (
+        (name === "oem_certificate" || name === "third_party_certificate") &&
+        value instanceof File
+    ) {
+        if (!ALLOWED_IMAGE_TYPES.includes(value.type)) {
+            setErrors((prev: any) => ({
+                ...prev,
+                [name]: "Only PNG, JPG, or JPEG images are allowed",
+            }));
+            return; // Don't update formData if invalid
+        }
+        if (value.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            setErrors((prev: any) => ({
+                ...prev,
+                [name]: `File size must not exceed ${MAX_FILE_SIZE_MB}MB`,
+            }));
+            return; // Don't update formData if invalid
+        }
+    }
+
+    setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+    }));
+    if (errors[name]) {
+        setErrors((prev: any) => ({ ...prev, [name]: "" }));
+    }
+};
+
+// 3. Update step 3 validation block
+if (currentStep === 3) {
+    if (!formData.oem_certificate) {
+        newErrors.oem_certificate = "OEM Certificate is required";
+    } else if (formData.oem_certificate instanceof File) {
+        if (!ALLOWED_IMAGE_TYPES.includes(formData.oem_certificate.type)) {
+            newErrors.oem_certificate = "Only PNG, JPG, or JPEG images are allowed";
+        } else if (formData.oem_certificate.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            newErrors.oem_certificate = `File size must not exceed ${MAX_FILE_SIZE_MB}MB`;
+        }
+    }
+
+    if (formData.third_party_certificate) {
+        if (formData.third_party_certificate instanceof File) {
+            if (!ALLOWED_IMAGE_TYPES.includes(formData.third_party_certificate.type)) {
+                newErrors.third_party_certificate = "Only PNG, JPG, or JPEG images are allowed";
+            } else if (formData.third_party_certificate.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                newErrors.third_party_certificate = `File size must not exceed ${MAX_FILE_SIZE_MB}MB`;
+            }
+        }
+        if (!formData.third_party_start_date)
+            newErrors.third_party_start_date = "Third party start date required";
+        if (!formData.third_party_expiry_date)
+            newErrors.third_party_expiry_date = "Third party expiry date required";
+    }
+
+    if (
+        (formData.third_party_start_date || formData.third_party_expiry_date) &&
+        !formData.third_party_certificate
+    ) {
+        newErrors.third_party_certificate = "Third party certificate is required";
+    }
+}
+
+
+{/* Start date picker */}
+<input
+    type="date"
+    value={formData.third_party_start_date}
+    onChange={(e) => updateForm("third_party_start_date", e.target.value)}
+/>
+{errors.third_party_start_date && <p>{errors.third_party_start_date}</p>}
+
+{/* Expiry date picker — min is set to 1 day after start date */}
+<input
+    type="date"
+    value={formData.third_party_expiry_date}
+    min={
+        formData.third_party_start_date
+            ? new Date(new Date(formData.third_party_start_date).getTime() + 86400000)
+                .toISOString()
+                .split("T")[0]
+            : undefined
+    }
+    onChange={(e) => updateForm("third_party_expiry_date", e.target.value)}
+/>
+{errors.third_party_expiry_date && <p>{errors.third_party_expiry_date}</p>}
+
+
+// Dependency rules: when key permission is selected, value permissions are auto-selected & locked.
+const PERMISSION_DEPENDENCIES: Record<string, { module: string; action: string }[]> = {
+    "user:create": [{ module: "role", action: "list" }],
+};
+
+/** Returns true if this permission is force-selected due to an active dependency. */
+const isPermissionLocked = (module: string, action: string): boolean => {
+    return Object.entries(PERMISSION_DEPENDENCIES).some(([key, deps]) => {
+        const [depModule, depAction] = key.split(":");
+        const isSourceActive = selectedPermissions[depModule]?.includes(depAction);
+        return isSourceActive && deps.some((d) => d.module === module && d.action === action);
+    });
+};
+
+/** Applies or removes dependency side-effects when a permission changes. */
+const applyDependencies = (
+    prev: Record<string, string[]>,
+    module: string,
+    action: string,
+    isAdding: boolean
+): Record<string, string[]> => {
+    const key = `${module}:${action}`;
+    const deps = PERMISSION_DEPENDENCIES[key];
+    if (!deps) return prev;
+
+    let updated = { ...prev };
+
+    if (isAdding) {
+        // Auto-add all dependent permissions
+        deps.forEach(({ module: dMod, action: dAct }) => {
+            const existing = updated[dMod] || [];
+            if (!existing.includes(dAct)) {
+                updated[dMod] = [...existing, dAct];
+            }
+        });
+    } else {
+        // Remove dependency only if no other active permission still requires it
+        deps.forEach(({ module: dMod, action: dAct }) => {
+            const stillRequired = Object.entries(PERMISSION_DEPENDENCIES).some(([otherKey, otherDeps]) => {
+                if (otherKey === key) return false;
+                const [oMod, oAct] = otherKey.split(":");
+                const isOtherActive = updated[oMod]?.includes(oAct);
+                return isOtherActive && otherDeps.some((d) => d.module === dMod && d.action === dAct);
+            });
+            if (!stillRequired) {
+                updated[dMod] = (updated[dMod] || []).filter((a) => a !== dAct);
+            }
+        });
+    }
+
+    return updated;
+};
+
+const handleCheckboxChange = (module: string, action: string) => {
+    if (isPermissionLocked(module, action)) return; // 🔒 block unchecking locked permissions
+
+    setSelectedPermissions((prev) => {
+        const modulePermissions = prev[module] || [];
+        const isAdding = !modulePermissions.includes(action);
+
+        const updated = isAdding
+            ? { ...prev, [module]: [...modulePermissions, action] }
+            : { ...prev, [module]: modulePermissions.filter((a) => a !== action) };
+
+        return applyDependencies(updated, module, action, isAdding);
+    });
+};
+
+
+const handleSelectAllChange = (module: string, actions: string[]) => {
+    const allSelected = isAllSelected(module, actions);
+
+    setSelectedPermissions((prev) => {
+        let updated = { ...prev, [module]: allSelected ? [] : actions };
+
+        // Apply/remove dependencies for each action in this module
+        actions.forEach((action) => {
+            updated = applyDependencies(updated, module, action, !allSelected);
+        });
+
+        return updated;
+    });
+};
+
+
+
+{actions.map((action) => {
+    const locked = isPermissionLocked(module, action);
+    return (
+        <label
+            className={`flex items-center gap-2 ${locked ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+            key={action}
+            title={locked ? "Required by another permission" : undefined}
+        >
+            <input
+                type='checkbox'
+                checked={selectedPermissions[module]?.includes(action) || false}
+                onChange={() => handleCheckboxChange(module, action)}
+                disabled={locked}
+            />
+            {transfromActionName(action)}
+            {locked && <span className='text-xs text-gray-400'>(auto)</span>}
+        </label>
+    );
+})}
