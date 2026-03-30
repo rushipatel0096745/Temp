@@ -2,6 +2,50 @@ https://chatgpt.com/share/69ca2628-5aa0-8323-a0a6-536307d5a056
 
 https://claude.ai/share/b2771603-21a7-4ce1-9d43-3877b2be0ed4
 
+{needsOptions && (
+    <div className='flex flex-col gap-3'>
+        <label className='text-sm font-medium text-gray-700'>Options</label>
+
+        {options.length === 0 && (
+            <p className='text-xs text-gray-400'>Click "Add Option" to add options</p>
+        )}
+
+        {options.map((opt, index) => (
+            <div key={index} className='flex gap-2 items-center'>
+                <input
+                    type='text'
+                    className='form-input flex-1'
+                    value={opt}
+                    placeholder={`Option ${index + 1}`}
+                    onChange={(e) => handleUpdateOption(e.target.value, index)}
+                />
+                <button
+                    type='button'
+                    onClick={() => handleDeleteOption(index)}
+                    className='bg-red-500 hover:bg-red-600 text-white py-1.5 px-3 text-sm rounded transition-colors'>
+                    Delete
+                </button>
+            </div>
+        ))}
+
+        <button
+            type='button'
+            onClick={() => setOptions((prev) => [...prev, ""])}
+            className='self-start bg-blue-500 hover:bg-blue-700 text-white py-1.5 px-3 text-sm rounded transition-colors'>
+            Add Option
+        </button>
+    </div>
+)}
+function handleSave() {
+    if (!text.trim() || !type) return;
+    onSave({
+        ...question,
+        question: text.trim(),
+        type,
+        options: needsOptions ? options.filter((o) => o.trim() !== "") : null,
+    });
+}
+
 
 const handleCheckboxChange = (module: string, action: string) => {
     setSelectedPermissions((prev) => {
