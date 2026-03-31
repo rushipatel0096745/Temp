@@ -17,3 +17,66 @@
         // }
     ]
 }
+
+
+const enforceDependencies = (permissions: Record<string, string[]>) => {
+    let updated = { ...permissions };
+
+    // rule: user:create → role:list
+    if (updated["user"]?.includes("create")) {
+        const rolePermissions = updated["role"] || [];
+
+        if (!rolePermissions.includes("list")) {
+            updated["role"] = [...rolePermissions, "list"];
+        }
+    }
+
+    return updated;
+};
+
+
+
+const handleCheckboxChange = (module: string, action: string) => {
+    setSelectedPermissions((prev) => {
+        const modulePermissions = prev[module] || [];
+
+        let updatedModulePermissions;
+
+        if (modulePermissions.includes(action)) {
+            updatedModulePermissions = modulePermissions.filter(
+                (a) => a !== action
+            );
+        } else {
+            updatedModulePermissions = [...modulePermissions, action];
+        }
+
+        let updatedPermissions = {
+            ...prev,
+            [module]: updatedModulePermissions,
+        };
+
+        // 🔥 enforce dependencies ALWAYS
+        updatedPermissions = enforceDependencies(updatedPermissions);
+
+        return updatedPermissions;
+    });
+};
+
+
+const handleSelectAllChange = (module: string, actions: string[]) => {
+    const allSelected = isAllSelected(module, actions);
+
+    setSelectedPermissions((prev) => {
+        let updated = {
+            ...prev,
+            [module]: allSelected ? [] : actions,
+        };
+
+        // 🔥 enforce dependencies here too
+        updated = enforceDependencies(updated);
+
+        return updated;
+    });
+};
+
+
