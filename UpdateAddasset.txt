@@ -198,3 +198,55 @@ const handleSelectAllChange = (module: string, actions: string[]) => {
         </label>
     );
 })}
+
+
+
+const handleCheckboxChange = (module: string, action: string) => {
+    setSelectedPermissions((prev) => {
+        const modulePermissions = prev[module] || [];
+
+        let updatedModulePermissions;
+
+        if (modulePermissions.includes(action)) {
+            // remove
+            updatedModulePermissions = modulePermissions.filter((a) => a !== action);
+        } else {
+            // add
+            updatedModulePermissions = [...modulePermissions, action];
+        }
+
+        let updatedPermissions = {
+            ...prev,
+            [module]: updatedModulePermissions,
+        };
+
+        // 🔥 Dependency Logic
+        if (module === "user" && action === "create") {
+            if (!modulePermissions.includes("create")) {
+                // when selecting user:create → force role:list
+                updatedPermissions["role"] = [
+                    ...(updatedPermissions["role"] || []),
+                    "list",
+                ];
+            } else {
+                // when unselecting user:create → allow role:list removal
+                updatedPermissions["role"] =
+                    updatedPermissions["role"]?.filter((a) => a !== "list") || [];
+            }
+        }
+
+        return updatedPermissions;
+    });
+};
+
+
+<input
+    type='checkbox'
+    checked={selectedPermissions[module]?.includes(action) || false}
+    onChange={() => handleCheckboxChange(module, action)}
+    disabled={
+        module === "role" &&
+        action === "list" &&
+        selectedPermissions["user"]?.includes("create")
+    }
+/>
